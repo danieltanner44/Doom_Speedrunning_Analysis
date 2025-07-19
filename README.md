@@ -82,3 +82,4 @@ YouTube: www.youtube.com/@improversgaming
 E-mail: improversgaming@gmail.com
 
 ### This programme was created by **improversgaming** in July 2025
+### The software is covered by the GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007. If in doubt just ask!
