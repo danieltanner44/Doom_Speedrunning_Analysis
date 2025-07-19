@@ -1,7 +1,7 @@
 def create_demo_structure(demo_file_bytes, demo_file_ints, demo_format_str, data_address_locations):
     # Construct demo header based on bytes read from file
     match demo_format_str:
-        case "Doom 1.9":
+        case "Doom":
             # Create the header based on known structure
             demo_header_data = {"Demo Format": demo_file_ints[0],
                            "Skill Level": demo_file_ints[1],
@@ -18,7 +18,7 @@ def create_demo_structure(demo_file_bytes, demo_file_ints, demo_format_str, data
                            "Red Player Playing": demo_file_ints[12],
                            }
 
-        case "Boom 2.02":
+        case "Boom":
             # Create the header based on known structure
             demo_header_data = {"Demo Format": demo_file_ints[0],
                            "Skill Level": demo_file_ints[8],
@@ -34,6 +34,24 @@ def create_demo_structure(demo_file_bytes, demo_file_ints, demo_format_str, data
                            "Brown Player Playing": demo_file_ints[18],
                            "Red Player Playing": demo_file_ints[19],
                            }
+
+        case "MBF":
+            # Create the header based on known structure
+            # Note: there is a lot of additional data in the header that is not parsed
+            demo_header_data = {"Demo Format": demo_file_ints[0],
+                                "Skill Level": demo_file_ints[8],
+                                "Episode": demo_file_ints[9],
+                                "Map": demo_file_ints[10],
+                                "Multiplayer Mode": demo_file_ints[11],
+                                "Respawn": demo_file_ints[19],
+                                "Fast": demo_file_ints[20],
+                                "Nomonsters": demo_file_ints[21],
+                                "Player POV": None,
+                                "Green Player Playing": demo_file_ints[77],
+                                "Indigo Player Playing": demo_file_ints[78],
+                                "Brown Player Playing": demo_file_ints[79],
+                                "Red Player Playing": demo_file_ints[80],
+                                }
 
     # Create the movement data structure
     # Each movement tic has four bytes: forward/backward, right/left, turn, action/use/weapon change

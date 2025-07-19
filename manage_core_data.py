@@ -28,7 +28,7 @@ def create_dataframe_for_demo(filename, demo_header_data, demo_footer_data,
         time_str = 'N/A'
         # Record the demo movement time as this can be used to determine
         # if failed attempt was a quick reset at start
-        run_time_s = demo_movement_time
+        run_time_s = round(demo_movement_time, 2)
     else:
         complete = "Y"
         time_str = dsda_text_file_data["Time"]
@@ -87,15 +87,13 @@ def create_dataframe_for_demo(filename, demo_header_data, demo_footer_data,
     }
     return collected_demo_data
 
-def store_master_data_to_hdf5(master_demo_data, start_time, demo_directory_name):
+def store_master_data_to_hdf5(master_demo_data, start_time, demo_directory_name, version, release_status):
     # This function stores the master data (for all demos) to hdf5 file
     # Create the master dataframe of all demo runs
     master_demo_data = pd.DataFrame(master_demo_data)
 
     # Add metadata to dataframe
     current_date, current_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S').split(" ")
-    version = "0.01"
-    release_status = "Test"
     end_time = time.time()
     processing_time = int(end_time - start_time)
     metadata = f"Date: {current_date}, Time: {current_time}, Version: {version}, Status: {release_status}, Processing Time: {processing_time}"

@@ -19,11 +19,17 @@ from print_to_console import print_to_console
 
 '''
 Current Limitations:
- - Single player
+ - Single player only
  - Single map demo (not movies)
- - Reads demo files in Boom 2.02 and Doom 1.9 format only
+ - Reads demo files in Doom (v1.09), Boom (v2.02) and MBF (v2.03 & 2.10) format only
+ - Does not handle time format change for very long demos
+ - Does not support longtick demos 
 
 Desirable Considerations for Future Work:
+ - Demo file no longer present
+ - Demo file section missing (header, footer, movement)
+ 
+ - Add support for additional formats
  - Check that required WAD is in dsda-doom folder (for -timedemo)
  - Add support for master data store not found
  - Create an automation for sensible initial filters for dashboard
@@ -63,6 +69,8 @@ if __name__ == '__main__':
     # =================================================================================
 
     # Capture the time require to run script, added to master data store metadata
+    version = "0.2"
+    release_status = "Test"
     start_time = time.time()
     dialog_title = 'Select Folder of Demo Files to Analyse'
     demo_directory_name = get_directory(dialog_title)
@@ -82,9 +90,8 @@ if __name__ == '__main__':
             # Read all data from demo file
             demo_file_bytes, demo_file_ints, demo_format_int, demo_format_str, data_address_locations, file_modification_date, file_modification_time = read_demo_file(demo_directory_name, filename)
 
-            # If demo format is unknown then warn and skip to next file
-            if demo_format_str == "Unknown":
-                print_to_console([demo_format_str, filename, demo_format_int])
+            # If demo format is unknown or invalid then warn and skip to next demo file
+            if demo_format_str is None:
                 continue
 
             # Parse data from demo file for header, movement and footer
@@ -114,7 +121,7 @@ if __name__ == '__main__':
 
         # Store the master dataframe to file in hdf5 format
         # Create and store metafile with it that captures general information about dataframe
-        master_dataframe_file_location = store_master_data_to_hdf5(master_demo_data, start_time, demo_directory_name)
+        master_dataframe_file_location = store_master_data_to_hdf5(master_demo_data, start_time, demo_directory_name, version, release_status)
 
         # Print metadata details for master dataframe
         print_to_console(["master dataframe", master_dataframe_file_location, master_demo_data])

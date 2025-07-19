@@ -1,26 +1,28 @@
 import os
 import time
 from datetime import datetime
+from print_to_console import print_to_console
 
 def check_demo_format_support(demo_format_int):
     # Check is demo format supported
-    supported_demo_formats = ["Doom 1.9", "Boom 2.02"]
     match demo_format_int:
         case 109:
-            demo_format_str = "Doom 1.9"
+            demo_format_str = "Doom"
             movement_data_start_address = 14
         case 202:
-            demo_format_str = "Boom 2.02"
+            demo_format_str = "Boom"
             movement_data_start_address = 110
-        case _:
-            demo_format_str = "Unknown"
+        case 203:
+            demo_format_str = "MBF"
+            movement_data_start_address = 114
+        case 128:
+            # Where only the footer is captured no header or movement data
+            demo_format_str = "Demo format invalid"
             movement_data_start_address = 0
-
-    print(f"The demo format is: {demo_format_str}")
-    if demo_format_str not in supported_demo_formats:
-        print(f"SKIPPING: Unfortunately this demo format is not currently supported\n")
+        case _:
+            demo_format_str = "Demo format unknown"
+            movement_data_start_address = 0
     return demo_format_str, movement_data_start_address
-
 
 def read_demo_file(directory_name, filename):
     # Read the raw demo file data
@@ -42,6 +44,15 @@ def read_demo_file(directory_name, filename):
 
         # Find the initial header address locations and demo format str
         demo_format_str, movement_data_start_address = check_demo_format_support(demo_format_int)
+        if demo_format_str == "Demo format invalid":
+            print_to_console(["Demo format invalid"])
+            return None, None, None, None, None, None, None
+        elif demo_format_str == "Demo format unknown":
+            print_to_console(["Demo format unknown", filename, demo_format_int])
+            time.sleep(10)
+            return None, None, None, None, None, None, None
+        else:
+            print_to_console(["Demo format", demo_format_str, demo_format_int])
 
         # Read the rest of the bytes from the whole demo file
         # Also store as signed integers
@@ -58,8 +69,8 @@ def read_demo_file(directory_name, filename):
     for address, each_byte in enumerate(demo_file_bytes):
         # End of movement data encoded by 0x80
         # Carriage returns in footer encoded by 0x0A
-        if each_byte[0] == 0x80:
-            # Once found add byte address to denote end of movement data
+        # Skip the header as it may have a 0x80 for other purposes
+        if each_byte[0] == 0x80 and address >= data_address_locations[1] - 1:
             data_address_locations.append(address + 1)
             end_movement_byte = True
         # Only look for the end of carriage characters after the movement data block as

@@ -13,9 +13,14 @@ def print_to_console(input_list):
 
             print(f"\n{Fore.BLACK}{Back.WHITE}Processing File: {file_index + 1} of {len(demo_filenames)}{Style.RESET_ALL}")
             print(f"Current file: {filename}")
-        case "Unknown":
+        case "Demo format unknown":
             demo_format_str, filename, demo_format_int = input_list
             print(f"{Fore.BLACK}{Back.YELLOW}WARNING: Skipping file {filename} as demo format {demo_format_int} is unknown\n{Style.RESET_ALL}")
+        case "Demo format invalid":
+            print(f"{Fore.BLACK}{Back.YELLOW}WARNING: Skipping file as the demo header is missing so demo is invalid\n{Style.RESET_ALL}")
+        case "Demo format":
+            print_str, demo_format_str, demo_format_int = input_list
+            print(f"The demo format is: {demo_format_str} version {demo_format_int}")
         case "data sources":
             print_str, filename, demo_header_data, demo_movement_data, demo_footer_data, dsda_analysis_file_data, dsda_text_file_data, dsda_levelstat_file, collected_demo_data = input_list
             print("=============================================================")
