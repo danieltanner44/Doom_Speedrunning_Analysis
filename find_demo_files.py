@@ -1,6 +1,8 @@
 import os
 import tkinter as tk
 from tkinter import filedialog
+from print_to_console import print_to_console
+import sys
 
 def get_directory(dialog_title):
     # This function creates a dialog box to allow the user to select
@@ -27,4 +29,7 @@ def find_demo_files(demo_directory_name):
     for file in sorted_demo_files.keys():
         if file.endswith(".lmp"):
             demo_filenames.append(file)
+    if len(demo_filenames) == 0:
+        print_to_console(["No demo files found...", demo_directory_name])
+        sys.exit()
     return demo_filenames

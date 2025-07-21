@@ -1,3 +1,5 @@
+import sys
+from print_to_console import print_to_console
 import numpy as np
 import pandas as pd
 import statistics
@@ -19,10 +21,14 @@ def create_display_dashboard(master_demo_data, WAD_filter, map_filter, category_
 
     # Create subset of data frame filtered by selected Category and Completed
     # This is data for completion time plot and histogram
-    comp_cat_wad_map_filtered_master_demo_data = wad_map_filtered_master_demo_data[
+    comp_cat_wad_map_filtered_master_demo_data = wad_map_filtered_master_demo_data.loc[
         (master_demo_data["Category"] == category_filter) &
         (master_demo_data["Complete"] == "Y")]
 
+    # Check if filters result in no data to present on dashboard
+    if len(wad_map_filtered_master_demo_data) == 0 or len(comp_cat_wad_map_filtered_master_demo_data) == 0:
+        print_to_console(["No data to display"])
+        sys.exit()
 
     # Create a moving average of completion time data (MAT) for all successful demos
     # Create a moving average window size that is somewhat sensible

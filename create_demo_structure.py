@@ -82,4 +82,12 @@ def create_demo_structure(demo_file_bytes, demo_file_ints, demo_format_str, data
         footer_lines.append(line)
 
     demo_footer_data = {"Features": footer_lines[-4], "Port": footer_lines[-2], "Parameters": footer_lines[-1]}
-    return demo_header_data, demo_movement_data, demo_footer_data, demo_movement_time
+    wad_details = demo_footer_data["Parameters"].replace('"', "").split(" ")
+    # Read the names of the pWAD and iWAD from the demo footer
+    pWAD, iWAD = None, None
+    for index, parameter in enumerate(wad_details):
+        if parameter == "-file":
+            pWAD = wad_details[index + 1]
+        if parameter == "-iwad":
+            iWAD = wad_details[index + 1]
+    return demo_header_data, demo_movement_data, demo_footer_data, demo_movement_time, pWAD, iWAD

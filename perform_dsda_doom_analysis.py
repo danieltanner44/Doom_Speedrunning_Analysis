@@ -1,7 +1,9 @@
 import os
 import subprocess
+import shutil
+from print_to_console import print_to_console
 
-def perform_dsda_doom_analysis(file_index, directory_name, filename, dsda_doom_directory):
+def perform_dsda_doom_analysis(file_index, directory_name, filename, dsda_doom_directory, iWAD, pWAD):
     # This function executes dsda-doom analysis on each demo file
     # It then parses all data from the output files produced
     current_demo_file = directory_name + "\\" + filename
@@ -9,6 +11,22 @@ def perform_dsda_doom_analysis(file_index, directory_name, filename, dsda_doom_d
     # Notes:
     # -nosound -nodraw allow dsda-doom to play the demo in the background
     # -timedemo allows dsda-doom to play the demo as quickly as possible
+
+    # Check that the required WAD files are available to dsda-doom
+    # If they are not the demo will still play back but the outcome will be wrong
+    if pWAD is not None:
+        pWAD_file = dsda_doom_directory + "\\" + pWAD
+        check = shutil.which(pWAD_file)
+        if check is None:
+            print_to_console(["pWAD missing", pWAD])
+            return None, None, None
+    if iWAD is not None:
+        iWAD_file = dsda_doom_directory + "\\" + iWAD
+        check = shutil.which(iWAD_file)
+        if check is None:
+            print_to_console(["iWAD missing", pWAD])
+            return None, None, None
+
     # Replace -timedemo with -playdemo (and omit -nosound and -nodraw) if you wish to watch the demos in realtime
     if file_index == 0:
         dsda_executable_file = "dsda-doom -nosound -timedemo " + current_demo_file + " -analysis -levelstat -export_text_file"

@@ -5,16 +5,23 @@ from print_to_console import print_to_console
 
 def check_demo_format_support(demo_format_int):
     # Check is demo format supported
-    match demo_format_int:
+    match demo_format_int[-1]:
         case 109:
             demo_format_str = "Doom"
             movement_data_start_address = 14
+            if demo_format_int[0] == 255:
+                movement_data_start_address += 27
         case 202:
             demo_format_str = "Boom"
             movement_data_start_address = 110
+            if demo_format_int[0] == 255:
+                movement_data_start_address += 27
         case 203:
             demo_format_str = "MBF"
             movement_data_start_address = 114
+        case 255: # Has umapinfo
+            demo_format_str = "UMAPINFO"
+            movement_data_start_address = None
         case 128:
             # Where only the footer is captured no header or movement data
             demo_format_str = "Demo format invalid"
@@ -35,30 +42,33 @@ def read_demo_file(directory_name, filename):
     # Read all of the demo file bytes
     demo_file_bytes = []
     demo_file_ints = []
+    demo_format_int = []
     with open(current_demo_file, "rb") as f:
         # Read the demo format from the first byte
         byte = f.read(1)
         demo_file_bytes.append(byte)
         demo_file_ints.append(int.from_bytes(byte))
-        demo_format_int = demo_file_ints[0]
-
-        # Find the initial header address locations and demo format str
-        demo_format_str, movement_data_start_address = check_demo_format_support(demo_format_int)
-        if demo_format_str == "Demo format invalid":
-            print_to_console(["Demo format invalid"])
-            return None, None, None, None, None, None, None
-        elif demo_format_str == "Demo format unknown":
-            print_to_console(["Demo format unknown", filename, demo_format_int])
-            time.sleep(10)
-            return None, None, None, None, None, None, None
-        else:
-            print_to_console(["Demo format", demo_format_str, demo_format_int])
+        demo_format_int.append(demo_file_ints[0])
 
         # Read the rest of the bytes from the whole demo file
         # Also store as signed integers
         while (byte := f.read(1)):
             demo_file_bytes.append(byte)
             demo_file_ints.append(int.from_bytes(byte, signed=True))
+
+    if demo_format_int[0] == 255:
+        demo_format_int.append(int.from_bytes(demo_file_bytes[27]))
+
+    # Find the initial header address locations and demo format str
+    demo_format_str, movement_data_start_address = check_demo_format_support(demo_format_int)
+    if demo_format_str == "Demo format invalid":
+        print_to_console(["Demo format invalid"])
+        return None, None, None, None, None, None, None
+    elif demo_format_str == "Demo format unknown":
+        print_to_console(["Demo format unknown", filename, demo_format_int])
+        return None, None, None, None, None, None, None
+    else:
+        print_to_console(["Demo format", demo_format_str, demo_format_int])
 
     # Now scan the read bytes for key address locations
     # Set the demo header address location range
@@ -79,4 +89,4 @@ def read_demo_file(directory_name, filename):
         elif each_byte[0] == 0x0A and end_movement_byte:
             data_address_locations.append(address + 1)
 
-    return demo_file_bytes, demo_file_ints, demo_format_int, demo_format_str, data_address_locations, file_modification_date, file_modification_time
+    return demo_file_bytes, demo_file_ints, demo_format_int[-1], demo_format_str, data_address_locations, file_modification_date, file_modification_time

@@ -5,43 +5,39 @@
 # From General Libraries
 import time
 import xarray
+import sys
 # From Developed Project Files
 from create_display_dashboard import create_display_dashboard
 from read_demo_file import read_demo_file
 from create_demo_structure import create_demo_structure
 from perform_dsda_doom_analysis import perform_dsda_doom_analysis
-from find_files import find_demo_files
+from find_demo_files import find_demo_files
 from manage_core_data import create_dataframe_for_demo
 from manage_core_data import store_master_data_to_hdf5
-from find_files import get_directory
+from find_demo_files import get_directory
 from print_to_console import print_to_console
-
 
 '''
 Current Limitations:
  - Single player only
  - Single map demo (not movies)
- - Reads demo files in Doom (v1.09), Boom (v2.02) and MBF (v2.03 & 2.10) format only
+ - Reads demo files in Doom (v1.09), Boom (v2.02) and MBF (v2.03) format only
  - Does not handle time format change for very long demos
  - Does not support longtick demos 
+ - Developed for use on Windows
 
 Desirable Considerations for Future Work:
- - Demo file no longer present
+ - Handle demo file no longer present
  - Demo file section missing (header, footer, movement)
- 
  - Add support for additional formats
- - Check that required WAD is in dsda-doom folder (for -timedemo)
  - Add support for master data store not found
  - Create an automation for sensible initial filters for dashboard
  - Consider other data to store: etc.
- - Restructure code to promote better architecture
  - Optimise and check how much processing of incomplete runs
     - Parsing the movement data has no known benefit
  - Rebuild visualisation of data to be:
     - filterable from the dashboard
     - dynamically updated with filter change
- - Add documentation and code comments
- - Upload to GitHub
  - Consider whether adding new metrics would be useful
     - Calculate overall playtime by including incomplete demo time
 '''
@@ -69,7 +65,7 @@ if __name__ == '__main__':
     # =================================================================================
 
     # Capture the time require to run script, added to master data store metadata
-    version = "0.2"
+    version = "0.3"
     release_status = "Test"
     start_time = time.time()
     dialog_title = 'Select Folder of Demo Files to Analyse'
@@ -95,11 +91,16 @@ if __name__ == '__main__':
                 continue
 
             # Parse data from demo file for header, movement and footer
-            demo_header_data, demo_movement_data, demo_footer_data, demo_movement_time = create_demo_structure(demo_file_bytes, demo_file_ints, demo_format_str, data_address_locations)
+            demo_header_data, demo_movement_data, demo_footer_data, demo_movement_time, pWAD, iWAD = (
+                create_demo_structure(demo_file_bytes, demo_file_ints, demo_format_str, data_address_locations))
 
             # Undertake analysis with dsda-doom -analysis, -export_text_file and -levelstat
             # Parse all data from these three files
-            dsda_analysis_file_data, dsda_text_file_data, dsda_levelstat_file = perform_dsda_doom_analysis(file_index, demo_directory_name, filename, dsda_doom_directory)
+            dsda_analysis_file_data, dsda_text_file_data, dsda_levelstat_file = perform_dsda_doom_analysis(file_index, demo_directory_name, filename, dsda_doom_directory, iWAD, pWAD)
+
+            # If the dsda-analysis cannot be performed then skip to next file
+            if dsda_analysis_file_data is None:
+                continue
 
             # Create dataframe for demo file - pulling data from demo and analysis files
             collected_demo_data = create_dataframe_for_demo(filename, demo_header_data, demo_footer_data,
@@ -121,10 +122,14 @@ if __name__ == '__main__':
 
         # Store the master dataframe to file in hdf5 format
         # Create and store metafile with it that captures general information about dataframe
-        master_dataframe_file_location = store_master_data_to_hdf5(master_demo_data, start_time, demo_directory_name, version, release_status)
+        if "master_demo_data" in locals():
+            master_dataframe_file_location = store_master_data_to_hdf5(master_demo_data, start_time, demo_directory_name, version, release_status)
 
-        # Print metadata details for master dataframe
-        print_to_console(["master dataframe", master_dataframe_file_location, master_demo_data])
+            # Print metadata details for master dataframe
+            print_to_console(["master dataframe", master_dataframe_file_location, master_demo_data])
+        else:
+            print_to_console(["No master dataframe"])
+            sys.exit()
 
     if display_dashboard:
         # Create file string to stored master data

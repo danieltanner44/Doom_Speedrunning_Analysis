@@ -5,12 +5,14 @@ def print_to_console(input_list):
     # This function simply prints messages to terminal so that clutter is removed from the main loop
     output_str = input_list[0]
     match output_str:
+        case "No demo files found...":
+            print_str, demo_directory_name = input_list
+            print(f"{Fore.BLACK}{Back.YELLOW}WARNING: No demo files (.lmp) found in directory: {demo_directory_name}{Style.RESET_ALL}")
         case "processing...":
             print_str, demo_filenames, filename, file_index = input_list
             if file_index == 0:
                 print(f"\n\n{Fore.BLACK}{Back.BLUE}Performing Analysis on Demo Files{Style.RESET_ALL}")
                 print(f"Found {len(demo_filenames)} demo files, processing ... \n")
-
             print(f"\n{Fore.BLACK}{Back.WHITE}Processing File: {file_index + 1} of {len(demo_filenames)}{Style.RESET_ALL}")
             print(f"Current file: {filename}")
         case "Demo format unknown":
@@ -21,6 +23,12 @@ def print_to_console(input_list):
         case "Demo format":
             print_str, demo_format_str, demo_format_int = input_list
             print(f"The demo format is: {demo_format_str} version {demo_format_int}")
+        case "pWAD missing":
+            print_str, pWAD = input_list
+            print(f"{Fore.BLACK}{Back.YELLOW}WARNING: Skipping file as the required pWAD {pWAD} is missing\n{Style.RESET_ALL}")
+        case "iWAD missing":
+            print_str, iWAD = input_list
+            print(f"{Fore.BLACK}{Back.YELLOW}WARNING: Skipping file as the required iWAD {iWAD} is missing\n{Style.RESET_ALL}")
         case "data sources":
             print_str, filename, demo_header_data, demo_movement_data, demo_footer_data, dsda_analysis_file_data, dsda_text_file_data, dsda_levelstat_file, collected_demo_data = input_list
             print("=============================================================")
@@ -47,10 +55,13 @@ def print_to_console(input_list):
             print(f"{master_dataframe_file_location}")
             print(f"The master dataframe looks like: ")
             print(tabulate(master_demo_data, headers='keys', tablefmt='psql') + "\n")
-
+        case "No master dataframe":
+            print(f"{Fore.BLACK}{Back.YELLOW}WARNING: There is no valid data to process from demos, exiting...{Style.RESET_ALL}")
         case "metadata":
             output_str, metadata = input_list
             print(f"The metadata for the master data is: {metadata}")
+        case "No data to display":
+            print(f"{Fore.BLACK}{Back.YELLOW}WARNING: No data to display on dashboard, try adjusting data filters at start of main.py, exiting...{Style.RESET_ALL}")
         case _:
             print(f"Error: List has unexpected number of elements")
     return
