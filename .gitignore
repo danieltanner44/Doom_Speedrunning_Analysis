@@ -1,1 +1,5 @@
 /Test_Folder/
+/.idea/
+/.venv/
+/.git/
+/__pycache__/
